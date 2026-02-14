@@ -1,0 +1,8 @@
+/* Base resets */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  padding: 0;
+}
