@@ -1,15 +1,22 @@
-// DB connection — wire up your client (e.g. mongoose, pg) here.
-// Call connect() from server.js on startup if needed.
+const mongoose = require('mongoose');
+const config = require('./index');
 
-let client = null;
+let isConnected = false;
 
 async function connect() {
-  // TODO: initialize and return DB client
-  return client;
+  if (isConnected) return mongoose.connection;
+  if (!config.mongoUri) {
+    console.warn('MONGODB_URI not set — DB operations will fail until .env is configured.');
+    return null;
+  }
+  const conn = await mongoose.connect(config.mongoUri);
+  isConnected = true;
+  console.log('MongoDB connected');
+  return conn;
 }
 
 function getClient() {
-  return client;
+  return mongoose.connection;
 }
 
 module.exports = { connect, getClient };

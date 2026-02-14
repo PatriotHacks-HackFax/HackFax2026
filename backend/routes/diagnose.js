@@ -1,7 +1,7 @@
 const express = require('express');
-const { stub } = require('../controllers/diagnoseController');
+const { diagnose } = require('../controllers/diagnoseController');
 
 const router = express.Router();
-router.post('/diagnose', stub);
+router.post('/diagnose', diagnose);
 
 module.exports = router;
