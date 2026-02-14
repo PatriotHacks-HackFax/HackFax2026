@@ -10,6 +10,17 @@ app.use(cors());
 app.use(express.json());
 app.use(logger);
 
+app.get('/', (req, res) => {
+  const port = req.app.get('port') || process.env.PORT || 3000;
+  res.type('html').send(`
+<!DOCTYPE html>
+<html><head><title>PatriotAI API</title></head><body style="font-family:sans-serif;padding:2rem;">
+  <h1>PatriotAI backend is running</h1>
+  <p>API server is available on port <strong>${port}</strong>.</p>
+</body></html>
+  `);
+});
+
 app.use('/', routes);
 
 app.use(errorHandler);
