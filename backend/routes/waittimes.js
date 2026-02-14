@@ -1,7 +1,7 @@
 const express = require('express');
-const { stub } = require('../controllers/waittimesController');
+const { getHospitalWaitTimes } = require('../controllers/waittimesController');
 
 const router = express.Router();
-router.post('/waittimes', stub);
+router.post('/waittimes', getHospitalWaitTimes);
 
 module.exports = router;

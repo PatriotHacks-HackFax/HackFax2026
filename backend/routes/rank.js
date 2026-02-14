@@ -1,7 +1,7 @@
 const express = require('express');
-const { stub } = require('../controllers/rankController');
+const { rank } = require('../controllers/rankController');
 
 const router = express.Router();
-router.post('/rank', stub);
+router.post('/rank', rank);
 
 module.exports = router;
