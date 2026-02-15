@@ -59,6 +59,7 @@ function isInvalidImageError(err) {
 const PROMPT_TEMPLATE = `You are a statistical medical triage assistant.
 
 Given the user's symptoms: {{symptoms}}
+User profile context (if provided): {{profile}}
 
 Your task:
 - Output ONLY strict JSON in this format:
@@ -74,6 +75,20 @@ Rules:
 - Severity must be an integer: 1 = mild, 2 = moderate, 3 = severe.
 - Use severity 3 for dangerous symptoms (chest pain, fainting, stroke signs, severe bleeding, difficulty breathing).
 - Do NOT include markdown, code fences, or any text outside the JSON.`;
+
+function profileToPrompt(profile) {
+  if (!profile || typeof profile !== 'object') {
+    return 'No profile context provided.';
+  }
+
+  const fields = [];
+  if (Number.isFinite(profile.age)) fields.push(`age=${Math.round(profile.age)}`);
+  if (typeof profile.gender === 'string' && profile.gender.trim()) fields.push(`gender=${profile.gender.trim()}`);
+  if (Number.isFinite(profile.heightCm)) fields.push(`heightCm=${Math.round(profile.heightCm)}`);
+  if (Number.isFinite(profile.weightKg)) fields.push(`weightKg=${Math.round(profile.weightKg)}`);
+
+  return fields.length ? fields.join(', ') : 'No profile context provided.';
+}
 
 function parseJsonFromText(text) {
   const raw = String(text || '').trim();
@@ -160,6 +175,7 @@ function normalizeImage(image) {
 async function generateDiagnosis(input) {
   const symptoms = input?.symptoms;
   const image = input?.image || null;
+  const profile = input?.profile || null;
 
   if (!Array.isArray(symptoms) || !symptoms.every((s) => typeof s === 'string' && s.trim())) {
     const err = new Error('Invalid symptoms input');
@@ -193,10 +209,14 @@ async function generateDiagnosis(input) {
   const symptomsStr = symptoms.length > 0
     ? symptoms.map((s) => s.trim()).join(', ')
     : 'No textual symptoms provided.';
+  const profileStr = profileToPrompt(profile);
   const imageGuidance = image
     ? 'An image is attached. Use visual evidence from the image together with symptoms.'
     : 'No image is attached. Use only symptoms text.';
-  const prompt = `${PROMPT_TEMPLATE.replace('{{symptoms}}', symptomsStr)}\n\n${imageGuidance}`;
+  const prompt = PROMPT_TEMPLATE
+    .replace('{{symptoms}}', symptomsStr)
+    .replace('{{profile}}', profileStr)
+    .concat(`\n\n${imageGuidance}`);
 
   const parts = [{ text: prompt }];
   if (image) {

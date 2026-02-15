@@ -30,6 +30,7 @@ describe('POST /diagnose', () => {
     expect(llmService.generateDiagnosis).toHaveBeenCalledWith({
       symptoms: ['headache and stress'],
       image: null,
+      profile: null,
     });
   });
 
@@ -75,6 +76,7 @@ describe('POST /diagnose', () => {
     expect(llmService.generateDiagnosis).toHaveBeenCalledWith({
       symptoms: ['headache'],
       image: null,
+      profile: null,
     });
   });
 
@@ -124,6 +126,7 @@ describe('POST /diagnose', () => {
         mimeType: 'image/png',
         data: 'iVBORw0KGgoAAAANSUhEUg==',
       },
+      profile: null,
     });
   });
 
@@ -148,6 +151,7 @@ describe('POST /diagnose', () => {
         mimeType: 'image/jpeg',
         data: '/9j/4AAQSkZJRgABAQAAAQABAAD',
       },
+      profile: null,
     });
   });
 });
