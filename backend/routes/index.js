@@ -4,6 +4,7 @@ const hospitalsRoutes = require('./hospitals');
 const waittimesRoutes = require('./waittimes');
 const rankRoutes = require('./rank');
 const ttsRoutes = require('./tts');
+const transcribeRoutes = require('./transcribe');
 const authRoutes = require('./auth');
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.use(hospitalsRoutes);
 router.use(waittimesRoutes);
 router.use(rankRoutes);
 router.use(ttsRoutes);
+router.use(transcribeRoutes);
 
 module.exports = router;

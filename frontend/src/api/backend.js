@@ -3,13 +3,12 @@
  * All network logic lives here. Components must import from this module only.
  */
 
-// In dev: use Vite proxy (/api) to avoid CORS. In prod: use env or default.
+// In dev: use VITE_API_URL (direct) or Vite proxy (/api).
+// In prod: use VITE_API_URL env var, or same-origin (empty string) for DO hosting.
 const BASE_URL =
-  import.meta.env.DEV
-    ? '/api'
-    : (import.meta.env.VITE_API_URL ||
-       import.meta.env.REACT_APP_API_URL ||
-       '/api');
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.REACT_APP_API_URL ||
+  (import.meta.env.DEV ? '/api' : '');
 
 const TOKEN_KEY = 'triage_auth_token';
 
@@ -57,6 +56,8 @@ async function request(endpoint, options = {}) {
   return res.json();
 }
 
+// --- Auth ---
+
 export async function signup(body) {
   const data = await request('/auth/signup', {
     method: 'POST',
@@ -95,15 +96,22 @@ export async function updateProfile(body) {
       gender: body.gender,
       heightCm: body.heightCm,
       weightKg: body.weightKg,
-      emergencyContacts: body.emergencyContacts,
+      emergencyContacts: body.emergencyContacts?.map((c) => ({
+        name: c.name,
+        relation: c.relation,
+        phone: c.phone,
+        email: c.email || '',
+      })),
     }),
   });
 }
 
+// --- Diagnose ---
+
 /**
  * POST /diagnose. Accepts text and/or image. At least one required.
- * @param {{ symptoms?: string, imageFile?: File }} body
- * @returns {Promise<{ condition: string, severity: number, reasoning: string }>}
+ * @param {{ symptoms?: string, imageFile?: File, languageCode?: string }} body
+ * @returns {Promise<{ condition: string, severity: number, reasoning: string, languageCode?: string }>}
  */
 export async function diagnose(body) {
   const trimmed = (body.symptoms || '').trim();
@@ -118,6 +126,10 @@ export async function diagnose(body) {
     symptoms: hasText ? trimmed : 'Photo of affected area',
   };
 
+  if (body.languageCode) {
+    payload.languageCode = body.languageCode;
+  }
+
   if (hasImage && body.imageFile) {
     const compressed = await compressImage(body.imageFile);
     payload.imageData = await blobToBase64(compressed);
@@ -130,10 +142,11 @@ export async function diagnose(body) {
   });
 }
 
+// --- Image helpers ---
+
 const MAX_IMAGE_DIM = 1200;
 const JPEG_QUALITY = 0.8;
 
-/** Compress image to reduce payload size and avoid "entity too large" errors. */
 function compressImage(file) {
   const url = URL.createObjectURL(file);
   return new Promise((resolve, reject) => {
@@ -186,10 +199,28 @@ function blobToBase64(blob) {
   });
 }
 
+// --- Transcribe audio ---
+
+/**
+ * POST /transcribe-audio
+ * @param {{ audioData: string, audioMimeType: string }} body
+ * @returns {Promise<{ symptomsText: string, languageCode: string }>}
+ */
+export async function transcribeAudio(body) {
+  return request('/transcribe-audio', {
+    method: 'POST',
+    body: JSON.stringify({
+      audioData: body.audioData,
+      audioMimeType: body.audioMimeType,
+    }),
+  });
+}
+
+// --- Hospitals, Wait Times, Ranking ---
+
 /**
  * POST /hospitals
  * @param {{ latitude: number, longitude: number }} body
- * @returns {Promise<Array<{ name: string, distance: number, travelTime: number }>>}
  */
 export async function getHospitals(body) {
   return request('/hospitals', {
@@ -203,8 +234,6 @@ export async function getHospitals(body) {
 
 /**
  * POST /waittimes
- * Backend expects hospitals array with { name, distance?, travelTime? }.
- * Returns { data: hospitalsWithWait }.
  * @param {{ hospitals: Array<{ name: string, distance?: number, travelTime?: number }> }} body
  */
 export async function getWaitTimes(body) {
@@ -216,8 +245,6 @@ export async function getWaitTimes(body) {
 
 /**
  * POST /rank
- * Backend expects { hospitals: [{ name, travelTime, waitTime }], severity: 1|2|3 }.
- * Returns { data: { top3 } }.
  * @param {{ hospitals: any[], severity: number }} body
  */
 export async function rank(body) {
@@ -230,9 +257,11 @@ export async function rank(body) {
   });
 }
 
+// --- TTS ---
+
 /**
  * POST /tts (ElevenLabs text-to-speech)
- * Returns audio/mpeg binary. Use for playback.
+ * Returns audio/mpeg binary.
  * @param {{ text: string, languageCode?: string, voiceId?: string }} body
  * @returns {Promise<Blob>}
  */

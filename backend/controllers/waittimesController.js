@@ -2,10 +2,10 @@ const { getWaitTimes } = require('../services/waittimeService');
 
 /**
  * POST /waittimes
- * Body: { hospitals: [{ name, distance, travelTime }, ...] }
+ * Body: { hospitals: [{ name, distance, travelTime, website? }, ...] }
  * Returns: hospitals array enriched with waitTime per hospital
  */
-function getHospitalWaitTimes(req, res) {
+async function getHospitalWaitTimes(req, res) {
   try {
     const { hospitals } = req.body;
 
@@ -24,7 +24,7 @@ function getHospitalWaitTimes(req, res) {
       }
     }
 
-    const hospitalsWithWait = getWaitTimes(hospitals);
+    const hospitalsWithWait = await getWaitTimes(hospitals);
 
     return res.json({
       status: 'ok',

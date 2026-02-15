@@ -33,6 +33,7 @@ function normalizeContacts(contacts) {
       name: String(c.name || '').trim(),
       relation: String(c.relation || '').trim(),
       phone: String(c.phone || '').trim(),
+      email: String(c.email || '').trim().toLowerCase(),
     }))
     .filter((c) => c.name || c.relation || c.phone);
 

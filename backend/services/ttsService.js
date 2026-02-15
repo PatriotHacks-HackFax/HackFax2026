@@ -6,12 +6,21 @@ const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
 // See https://api.elevenlabs.io/v1/voices for all options
 const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
 
-// Supported language codes for multilingual output
+// Languages supported by our app (for validation elsewhere)
 const SUPPORTED_LANGUAGES = [
   'en', 'es', 'fr', 'de', 'it', 'pt', 'pl', 'hi', 'ar', 'zh',
   'ja', 'ko', 'nl', 'ru', 'sv', 'tr', 'uk', 'vi', 'id', 'fil',
-  'ta', 'cs', 'da', 'fi', 'el', 'hu', 'no', 'ro', 'sk',
+  'ta', 'te', 'cs', 'da', 'fi', 'el', 'hu', 'no', 'ro', 'sk',
 ];
+
+// Languages that ElevenLabs multilingual_v2 accepts as language_code parameter.
+// For languages NOT in this list, we still use multilingual_v2 but let it auto-detect
+// the language from the text/script (works for Telugu, Tamil, etc.)
+const ELEVENLABS_LANGUAGE_CODES = new Set([
+  'en', 'es', 'fr', 'de', 'it', 'pt', 'pl', 'hi', 'ar', 'zh',
+  'ja', 'ko', 'nl', 'ru', 'sv', 'tr', 'uk', 'vi', 'id', 'fil',
+  'cs', 'da', 'fi', 'el', 'hu', 'no', 'ro', 'sk',
+]);
 
 /**
  * Convert text to speech using ElevenLabs API.
@@ -28,11 +37,10 @@ async function textToSpeech(text, options = {}) {
   }
 
   const voiceId = options.voiceId || DEFAULT_VOICE_ID;
-  // Use multilingual v2 model for language support, standard v1 for English-only
   const languageCode = options.languageCode || null;
-  const modelId = languageCode && languageCode !== 'en'
-    ? 'eleven_multilingual_v2'
-    : 'eleven_monolingual_v1';
+  // Use multilingual v2 for any non-English language
+  const isNonEnglish = languageCode && languageCode !== 'en';
+  const modelId = isNonEnglish ? 'eleven_multilingual_v2' : 'eleven_monolingual_v1';
 
   const body = {
     text,
@@ -43,8 +51,10 @@ async function textToSpeech(text, options = {}) {
     },
   };
 
-  // Add language code for multilingual model
-  if (languageCode && languageCode !== 'en') {
+  // Only pass language_code if ElevenLabs explicitly supports it.
+  // For unsupported languages (e.g. Telugu, Tamil), the multilingual model
+  // will auto-detect the language from the text/script.
+  if (isNonEnglish && ELEVENLABS_LANGUAGE_CODES.has(languageCode)) {
     body.language_code = languageCode;
   }
 

@@ -5,6 +5,7 @@ const EmergencyContactSchema = new mongoose.Schema(
     name: { type: String, trim: true, required: true },
     relation: { type: String, trim: true, default: '' },
     phone: { type: String, trim: true, required: true },
+    email: { type: String, trim: true, lowercase: true, default: '', match: /^\S+@\S+\.\S+$/ },
   },
   { _id: false }
 );

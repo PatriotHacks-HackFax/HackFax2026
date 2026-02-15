@@ -4,7 +4,7 @@ import * as api from '../api/backend';
 import styles from './Layout.module.css';
 
 function emptyContact() {
-  return { name: '', relation: '', phone: '' };
+  return { name: '', relation: '', phone: '', email: '' };
 }
 
 export default function Layout() {
@@ -167,6 +167,7 @@ export default function Layout() {
           name: String(c.name || '').trim(),
           relation: String(c.relation || '').trim(),
           phone: String(c.phone || '').trim(),
+          email: String(c.email || '').trim(),
         }))
         .filter((c) => c.name || c.relation || c.phone);
 
@@ -358,6 +359,15 @@ export default function Layout() {
                       value={contact.phone || ''}
                       onChange={(e) => updateContact(index, 'phone', e.target.value)}
                       required
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span>Email (for emergency alerts)</span>
+                    <input
+                      type="email"
+                      placeholder="Their email address"
+                      value={contact.email || ''}
+                      onChange={(e) => updateContact(index, 'email', e.target.value)}
                     />
                   </label>
                   {contacts.length > 1 && (

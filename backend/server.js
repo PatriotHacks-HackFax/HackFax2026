@@ -14,12 +14,18 @@ function normalizePort(value, fallback = 3000) {
 }
 
 async function start() {
-  await db.connect();
+  try {
+    await db.connect();
+  } catch (err) {
+    console.warn('MongoDB connection failed — continuing without DB:', err.message);
+  }
 
   const basePort = normalizePort(config.port, 3000);
+  // Bind to 0.0.0.0 in production (needed for Digital Ocean / cloud hosting)
+  const host = config.nodeEnv === 'production' ? '0.0.0.0' : undefined;
   const tryListen = (p) =>
     new Promise((resolve, reject) => {
-      const server = app.listen(p, () => resolve(server));
+      const server = app.listen(p, host, () => resolve(server));
       server.on('error', (err) => {
         if (err.code === 'EADDRINUSE') resolve(null);
         else reject(err);

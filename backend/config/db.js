@@ -9,7 +9,9 @@ async function connect() {
     console.warn('MONGODB_URI not set — DB operations will fail until .env is configured.');
     return null;
   }
-  const conn = await mongoose.connect(config.mongoUri);
+  const conn = await mongoose.connect(config.mongoUri, {
+    serverSelectionTimeoutMS: 5000,
+  });
   isConnected = true;
   console.log('MongoDB connected');
   return conn;
