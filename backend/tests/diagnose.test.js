@@ -75,6 +75,7 @@ describe('POST /diagnose', () => {
       reasoning: 'Common pattern for stress.',
       nextSteps: '',
       languageCode: 'en',
+      emergencyNotified: false,
     });
     expect(llmService.generateDiagnosis).toHaveBeenCalledWith({
       symptoms: ['headache'],

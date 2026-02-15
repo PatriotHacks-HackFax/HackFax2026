@@ -243,6 +243,23 @@
   font-size: var(--font-size-base);
 }
 
+/* Emergency contact alert card */
+.alertCard {
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 2px solid #93c5fd;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-card);
+}
+
+.alertText {
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--color-text);
+  margin: 0;
+}
+
 /* Best hospital card */
 .bestCard {
   background: linear-gradient(135deg, #f0fdf4, #ecfdf5);

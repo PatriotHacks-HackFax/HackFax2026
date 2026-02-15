@@ -96,7 +96,12 @@ export async function updateProfile(body) {
       gender: body.gender,
       heightCm: body.heightCm,
       weightKg: body.weightKg,
-      emergencyContacts: body.emergencyContacts,
+      emergencyContacts: body.emergencyContacts?.map((c) => ({
+        name: c.name,
+        relation: c.relation,
+        phone: c.phone,
+        email: c.email || '',
+      })),
     }),
   });
 }

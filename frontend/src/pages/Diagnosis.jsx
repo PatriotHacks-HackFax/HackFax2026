@@ -310,6 +310,17 @@ export default function Diagnosis() {
         )}
       </section>
 
+      {diagnosis.emergencyNotified && (
+        <section className={styles.alertCard} aria-labelledby="alert-heading">
+          <h2 id="alert-heading" className={styles.cardTitle}>
+            Emergency contact notified
+          </h2>
+          <p className={styles.alertText}>
+            We sent an email to your emergency contact with a summary of this assessment. They have been asked to check on you.
+          </p>
+        </section>
+      )}
+
       {diagnosis.nextSteps && (
         <section className={styles.card} aria-labelledby="nextsteps-heading">
           <h2 id="nextsteps-heading" className={styles.cardTitle}>
