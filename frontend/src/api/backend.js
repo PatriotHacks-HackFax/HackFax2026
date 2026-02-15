@@ -101,14 +101,88 @@ export async function updateProfile(body) {
 }
 
 /**
- * POST /diagnose
- * @param {{ symptoms: string }} body
+ * POST /diagnose. Accepts text and/or image. At least one required.
+ * @param {{ symptoms?: string, imageFile?: File }} body
  * @returns {Promise<{ condition: string, severity: number, reasoning: string }>}
  */
 export async function diagnose(body) {
+  const trimmed = (body.symptoms || '').trim();
+  const hasText = trimmed.length > 0;
+  const hasImage = body.imageFile != null;
+
+  if (!hasText && !hasImage) {
+    throw new Error('Please describe your symptoms or add a photo.');
+  }
+
+  const payload = {
+    symptoms: hasText ? trimmed : 'Photo of affected area',
+  };
+
+  if (hasImage && body.imageFile) {
+    const compressed = await compressImage(body.imageFile);
+    payload.imageData = await blobToBase64(compressed);
+    payload.imageMimeType = 'image/jpeg';
+  }
+
   return request('/diagnose', {
     method: 'POST',
-    body: JSON.stringify({ symptoms: body.symptoms }),
+    body: JSON.stringify(payload),
+  });
+}
+
+const MAX_IMAGE_DIM = 1200;
+const JPEG_QUALITY = 0.8;
+
+/** Compress image to reduce payload size and avoid "entity too large" errors. */
+function compressImage(file) {
+  const url = URL.createObjectURL(file);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > MAX_IMAGE_DIM || height > MAX_IMAGE_DIM) {
+        if (width > height) {
+          height = Math.round((height / width) * MAX_IMAGE_DIM);
+          width = MAX_IMAGE_DIM;
+        } else {
+          width = Math.round((width / height) * MAX_IMAGE_DIM);
+          height = MAX_IMAGE_DIM;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(url);
+          blob ? resolve(blob) : reject(new Error('Could not compress image'));
+        },
+        'image/jpeg',
+        JPEG_QUALITY
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Could not load image'));
+    };
+    img.src = url;
+  });
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      const base64 = typeof result === 'string' && result.startsWith('data:')
+        ? result.split(',')[1]
+        : result;
+      resolve(base64 || '');
+    };
+    reader.onerror = () => reject(new Error('Could not read image'));
+    reader.readAsDataURL(blob);
   });
 }
 

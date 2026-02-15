@@ -118,6 +118,184 @@
   cursor: not-allowed;
 }
 
+.photoLabel {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: var(--spacing-lg) 0 var(--spacing-xs) 0;
+}
+
+.photoHint {
+  font-size: var(--font-size-base);
+  color: var(--color-muted);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.photoOptions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.addPhotoButton,
+.uploadPhotoButton {
+  flex: 1;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-large);
+  font-weight: 600;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.addPhotoButton {
+  color: var(--color-primary);
+  background: transparent;
+  border: 2px solid var(--color-primary);
+}
+
+.addPhotoButton:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.uploadPhotoButton {
+  color: var(--color-primary);
+  background: transparent;
+  border: 2px solid var(--color-primary);
+}
+
+.uploadPhotoButton:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.uploadPhotoButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.photoSection {
+  margin: var(--spacing-md) 0;
+}
+
+.removePhotoButton {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-muted);
+  background: transparent;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.removePhotoButton:hover:not(:disabled) {
+  border-color: var(--color-muted);
+  color: var(--color-text);
+}
+
+.fileInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.addPhotoButton:disabled,
+.uploadPhotoButton:disabled,
+.removePhotoButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.photoPreview {
+  margin: var(--spacing-md) 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-muted);
+}
+
+.photoPreview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  object-fit: contain;
+}
+
+.cameraError {
+  margin: var(--spacing-sm) 0 0;
+  font-size: var(--font-size-base);
+  color: var(--color-error-text);
+}
+
+.cameraOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  box-sizing: border-box;
+}
+
+.cameraContent {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.cameraVideo {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  background: #000;
+  object-fit: contain;
+  max-height: 70vh;
+}
+
+.cameraActions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+}
+
+.cameraCancelButton,
+.cameraCaptureButton {
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-large);
+  font-weight: 600;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.cameraCancelButton {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.cameraCancelButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cameraCaptureButton {
+  background: var(--color-primary);
+  border: none;
+  color: white;
+}
+
+.cameraCaptureButton:hover {
+  background: var(--color-primary-hover);
+}
+
 .features {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -132,6 +310,10 @@
 @media (max-width: 520px) {
   .features {
     grid-template-columns: 1fr;
+  }
+
+  .photoOptions {
+    flex-direction: column;
   }
 }
 
