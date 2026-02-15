@@ -93,6 +93,32 @@ function speakWithBrowser(text) {
   });
 }
 
+function getRideLinks(hospital, pickupLocation) {
+  if (!hospital || hospital.latitude == null || hospital.longitude == null) return null;
+
+  const lat = Number(hospital.latitude);
+  const lng = Number(hospital.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+  const pickupLat = pickupLocation ? Number(pickupLocation.latitude) : null;
+  const pickupLng = pickupLocation ? Number(pickupLocation.longitude) : null;
+  const hasPickup = Number.isFinite(pickupLat) && Number.isFinite(pickupLng);
+
+  const destinationName = encodeURIComponent(hospital.name || 'Hospital');
+
+  return {
+    // Uber deep link supports explicit pickup+dropoff coordinates.
+    // If pickup isn't provided, Uber will typically use the rider's current location.
+    uber: `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}&dropoff[nickname]=${destinationName}`
+      + (hasPickup ? `&pickup[latitude]=${pickupLat}&pickup[longitude]=${pickupLng}` : ''),
+
+    // Lyft usually defaults pickup to current location in-app. Destination can be prefilled reliably.
+    // Some clients may honor pickup coords; if ignored, the link still works.
+    lyft: `https://ride.lyft.com/?destination[latitude]=${lat}&destination[longitude]=${lng}`
+      + (hasPickup ? `&pickup[latitude]=${pickupLat}&pickup[longitude]=${pickupLng}` : ''),
+  };
+}
+
 export default function Diagnosis() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -140,6 +166,7 @@ export default function Diagnosis() {
   const bestHospitalName = top3.length > 0 ? top3[0].name : (closestHospitals[0]?.name ?? null);
 
   const hasMapData = latitude != null && longitude != null;
+  const pickupLocation = hasMapData ? { latitude, longitude } : null;
   const languageCode = diagnosis?.languageCode || 'en';
   const languageLocale = LANGUAGE_LOCALES[languageCode] || 'en-US';
   const languageLabel = LANGUAGE_LABELS[languageCode] || languageCode;
@@ -249,6 +276,10 @@ export default function Diagnosis() {
         <p className={styles.pageSubtitle}>
           Based on your symptoms and location.
         </p>
+        <p className={styles.disclaimerTop}>
+          Not medical professionals. This is not medical advice, and is meant to help you take faster next steps.
+          If this is an emergency, call 911.
+        </p>
       </header>
 
       <section className={styles.card} aria-labelledby="condition-heading">
@@ -338,6 +369,7 @@ export default function Diagnosis() {
           </h2>
           {(() => {
             const best = closestHospitals.find(h => h.name === bestHospitalName) || closestHospitals[0];
+            const bestRideLinks = getRideLinks(best, pickupLocation);
             return (
               <div className={styles.bestHospital}>
                 <span className={styles.bestBadge}>Top pick</span>
@@ -363,6 +395,26 @@ export default function Diagnosis() {
                 {best.address && (
                   <span className={styles.bestAddress}>{best.address}</span>
                 )}
+                {bestRideLinks && (
+                  <div className={styles.rideLinks}>
+                    <a
+                      href={bestRideLinks.uber}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.rideButton} ${styles.uberButton}`}
+                    >
+                      Ride with Uber
+                    </a>
+                    <a
+                      href={bestRideLinks.lyft}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.rideButton} ${styles.lyftButton}`}
+                    >
+                      Ride with Lyft
+                    </a>
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -378,6 +430,9 @@ export default function Diagnosis() {
         ) : (
           <ul className={styles.hospitalList}>
             {closestHospitals.map((h, i) => (
+              (() => {
+                const rideLinks = getRideLinks(h, pickupLocation);
+                return (
               <li
                 key={i}
                 className={`${styles.hospitalCard} ${h.name === bestHospitalName ? styles.hospitalBest : ''}`}
@@ -410,7 +465,29 @@ export default function Diagnosis() {
                     Get directions &rarr;
                   </a>
                 )}
+                {rideLinks && (
+                  <div className={styles.rideLinks}>
+                    <a
+                      href={rideLinks.uber}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.rideButton} ${styles.uberButton}`}
+                    >
+                      Uber
+                    </a>
+                    <a
+                      href={rideLinks.lyft}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.rideButton} ${styles.lyftButton}`}
+                    >
+                      Lyft
+                    </a>
+                  </div>
+                )}
               </li>
+                );
+              })()
             ))}
           </ul>
         )}

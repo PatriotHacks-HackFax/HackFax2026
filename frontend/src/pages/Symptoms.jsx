@@ -498,6 +498,10 @@ export default function Symptoms() {
         <p className={styles.heroSubtitle}>
           We will help you find nearby hospitals based on your symptoms and location.
         </p>
+        <p className={styles.disclaimerNote}>
+          Not medical professionals. This tool is not medical advice, and is meant to help you take faster next steps.
+          If this is an emergency, call 911.
+        </p>
       </header>
 
       <div className={styles.formAndFeatures}>
