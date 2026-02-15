@@ -3,11 +3,12 @@
  * All network logic lives here. Components must import from this module only.
  */
 
-// In dev: use Vite proxy (/api) to avoid CORS. In prod: use env or default.
+// In dev: use VITE_API_URL (direct) or Vite proxy (/api).
+// In prod: use VITE_API_URL env var, or same-origin (empty string) for DO hosting.
 const BASE_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.REACT_APP_API_URL ||
-  (import.meta.env.DEV ? '/api' : 'http://localhost:3000');
+  (import.meta.env.DEV ? '/api' : '');
 
 const TOKEN_KEY = 'triage_auth_token';
 
