@@ -11,15 +11,33 @@ const BASE_URL =
        import.meta.env.REACT_APP_API_URL ||
        'http://localhost:3000');
 
+const TOKEN_KEY = 'triage_auth_token';
+
+export function getAuthToken() {
+  return localStorage.getItem(TOKEN_KEY) || '';
+}
+
+export function setAuthToken(token) {
+  if (!token) return;
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearAuthToken() {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`;
+  const token = getAuthToken();
   const config = {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
     ...options,
   };
+
   const res = await fetch(url, config);
   if (!res.ok) {
     const err = new Error(`API error: ${res.status} ${res.statusText}`);
@@ -33,7 +51,53 @@ async function request(endpoint, options = {}) {
     }
     throw err;
   }
+
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) return res;
   return res.json();
+}
+
+export async function signup(body) {
+  const data = await request('/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: body.name,
+      email: body.email,
+      password: body.password,
+    }),
+  });
+  if (data?.token) setAuthToken(data.token);
+  return data;
+}
+
+export async function login(body) {
+  const data = await request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: body.email,
+      password: body.password,
+    }),
+  });
+  if (data?.token) setAuthToken(data.token);
+  return data;
+}
+
+export async function fetchMe() {
+  return request('/auth/me', { method: 'GET' });
+}
+
+export async function updateProfile(body) {
+  return request('/auth/profile', {
+    method: 'PUT',
+    body: JSON.stringify({
+      name: body.name,
+      age: body.age,
+      gender: body.gender,
+      heightCm: body.heightCm,
+      weightKg: body.weightKg,
+      emergencyContacts: body.emergencyContacts,
+    }),
+  });
 }
 
 /**
@@ -100,9 +164,13 @@ export async function rank(body) {
  */
 export async function synthesizeTts(body) {
   const url = `${BASE_URL.replace(/\/$/, '')}/tts`;
+  const token = getAuthToken();
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({
       text: body.text,
       languageCode: body.languageCode,

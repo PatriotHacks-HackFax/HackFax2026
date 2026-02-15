@@ -4,9 +4,11 @@ const hospitalsRoutes = require('./hospitals');
 const waittimesRoutes = require('./waittimes');
 const rankRoutes = require('./rank');
 const ttsRoutes = require('./tts');
+const authRoutes = require('./auth');
 
 const router = express.Router();
 
+router.use(authRoutes);
 router.use(diagnoseRoutes);
 router.use(hospitalsRoutes);
 router.use(waittimesRoutes);
