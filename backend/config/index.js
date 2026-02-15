@@ -7,6 +7,8 @@ const config = {
   googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   elevenLabsApiKey: process.env.ELEVENLABS_API_KEY || '',
+  jwtSecret: process.env.JWT_SECRET || 'dev-only-change-me',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
 };
 
 module.exports = config;
