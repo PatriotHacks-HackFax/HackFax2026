@@ -17,27 +17,28 @@ TriageSense is a full-stack web app that helps users describe symptoms, get a fa
 ## Architecture (Mermaid)
 
 ```mermaid
-flowchart TD
-  U[User Browser] -->|React UI| FE[Frontend (Vite/React)]
+flowchart LR
+  U[User] --> FE[Frontend]
 
-  FE -->|Auth: signup/login/me/profile| API_AUTH[Express API /auth/*]
-  FE -->|Diagnose| API_DIAG[Express API POST /diagnose]
-  FE -->|Hospitals + waittimes + ranking| API_MISC[Express API /hospitals /waittimes /rank]
-  FE -->|TTS + Transcribe| API_MEDIA[Express API /tts /transcribe-audio]
+  FE --> AUTH[Auth API]
+  FE --> DIAG[Diagnose API]
+  FE --> MISC[Hospitals API]
+  FE --> MEDIA[Media API]
 
-  subgraph BE[Backend (Node/Express)]
-    API_AUTH --> DB[(MongoDB)]
-    API_DIAG --> LLM[Gemini Diagnosis Service]
-    API_DIAG --> DB
-    API_MISC --> MAPS[Maps/Geo + Hospital Search]
-    API_MISC --> SCRAPE[Wait-Time Scraper]
-    API_MEDIA --> TTS[ElevenLabs TTS]
-    API_MEDIA --> TRANSCRIBE[Audio Transcription Route]
-    API_DIAG -->|severity 3/3| EMAIL[Nodemailer SMTP Email]
+  subgraph Backend
+    AUTH --> DB[(MongoDB)]
+    DIAG --> LLM[Gemini]
+    DIAG --> DB
+    DIAG --> EMAIL[Email Alert]
+    MISC --> MAPS[Geo + Search]
+    MISC --> SCRAPE[Scraper]
+    MEDIA --> TTS[ElevenLabs]
+    MEDIA --> TRANS[Transcription]
   end
 
-  SCRAPE --> WEB[Hospital Websites (HTML)]
-  EMAIL --> SMTP[(SMTP Provider, e.g. Gmail)]
+  SCRAPE --> WEB[Hospital Sites]
+  EMAIL --> SMTP[SMTP]
+
 ```
 
 ## Local Development
