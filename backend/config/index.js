@@ -1,7 +1,15 @@
 require('dotenv').config();
 
+function parsePort(value, fallback = 3000) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const cleaned = String(value).trim().replace(/^['"]|['"]$/g, '');
+  const port = Number.parseInt(cleaned, 10);
+  if (!Number.isInteger(port) || port < 0 || port > 65535) return fallback;
+  return port;
+}
+
 const config = {
-  port: process.env.PORT || 3000,
+  port: parsePort(process.env.PORT, 3000),
   nodeEnv: process.env.NODE_ENV || 'development',
   mongoUri: process.env.MONGODB_URI || '',
   googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
