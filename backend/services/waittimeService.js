@@ -1,20 +1,16 @@
 /**
  * Wait-Time Service
- * Currently uses synthetic data. Can be swapped to Gemini-powered scraping later.
+ * Tries to scrape real ER wait times first, falls back to synthetic data.
  */
 
-// Synthetic wait-time ranges by hospital type (minutes)
-const WAIT_RANGES = {
-  emergency_room: { min: 30, max: 180 },
-  urgent_care: { min: 10, max: 60 },
-  hospital: { min: 20, max: 120 },
-  default: { min: 15, max: 90 },
-};
+const { scrapeWaitTime } = require('./scraperService');
+
+// Synthetic wait-time ranges (minutes)
+const WAIT_RANGES = { default: { min: 15, max: 90 } };
 
 /**
  * Generate a synthetic wait time for a hospital.
- * Uses seeded randomness based on hospital name + current hour so the same
- * hospital returns a consistent wait time within the same hour window.
+ * Seeded by hospital name + current hour for consistency.
  */
 function generateSyntheticWait(hospitalName) {
   const hour = new Date().getHours();
@@ -24,25 +20,44 @@ function generateSyntheticWait(hospitalName) {
   }
   seed += hour;
 
-  // Simple pseudo-random from seed
   const rand = ((seed * 9301 + 49297) % 233280) / 233280;
-
   const range = WAIT_RANGES.default;
-  const waitTime = Math.round(range.min + rand * (range.max - range.min));
-  return waitTime;
+  return Math.round(range.min + rand * (range.max - range.min));
 }
 
 /**
  * Get wait times for a list of hospitals.
- * @param {Array} hospitals - Array of hospital objects (must have at least `name`)
- * @returns {Array} hospitals enriched with `waitTime` (minutes) and `waitTimeEstimated` flag
+ * Scrapes real data when possible, falls back to synthetic.
+ * @param {Array} hospitals - [{ name, website?, ... }]
+ * @returns {Promise<Array>} hospitals enriched with waitTime + waitTimeEstimated flag
  */
-function getWaitTimes(hospitals) {
-  return hospitals.map((hospital) => ({
-    ...hospital,
-    waitTime: generateSyntheticWait(hospital.name),
-    waitTimeEstimated: true, // flag so frontend knows this is an estimate
-  }));
+async function getWaitTimes(hospitals) {
+  const results = await Promise.all(
+    hospitals.map(async (hospital) => {
+      let waitTime = null;
+      let estimated = true;
+
+      try {
+        waitTime = await scrapeWaitTime(hospital.name, hospital.website || null);
+      } catch (err) {
+        // Scrape failed — will use synthetic
+      }
+
+      if (waitTime != null) {
+        estimated = false; // Real data from hospital website
+      } else {
+        waitTime = generateSyntheticWait(hospital.name);
+      }
+
+      return {
+        ...hospital,
+        waitTime,
+        waitTimeEstimated: estimated,
+      };
+    })
+  );
+
+  return results;
 }
 
 module.exports = { getWaitTimes, generateSyntheticWait };

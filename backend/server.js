@@ -5,7 +5,11 @@ const db = require('./config/db');
 const MAX_PORT_ATTEMPTS = 10;
 
 async function start() {
-  await db.connect();
+  try {
+    await db.connect();
+  } catch (err) {
+    console.warn('MongoDB connection failed — continuing without DB:', err.message);
+  }
 
   let port = config.port;
   const tryListen = (p) =>

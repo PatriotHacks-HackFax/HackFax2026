@@ -87,26 +87,77 @@
   margin: 0;
 }
 
-.ttsButton {
+.ttsControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: var(--font-size-base);
+}
+
+.ttsIcon {
+  font-style: normal;
+  font-size: 0.85em;
+}
+
+.ttsButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-primary);
-  background: var(--color-primary-soft);
-  border: 2px solid var(--color-primary);
-  border-radius: var(--radius);
+  background: white;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 999px;
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
+  transition: background 0.15s, box-shadow 0.15s;
 }
 
 .ttsButton:hover:not(:disabled) {
-  background: var(--color-primary-subtle);
+  background: var(--color-primary-soft);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .ttsButton:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
+}
+
+.ttsPlaying {
+  color: white;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.ttsPlaying:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.ttsPaused {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.ttsStopButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #b91c1c;
+  background: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ttsStopButton:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
 }
 
 .ttsError {
@@ -174,6 +225,210 @@
   color: var(--color-text-soft);
 }
 
+.emergencyNote {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius);
+  color: #991b1b;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+}
+
+/* Best hospital card */
+.bestCard {
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  border: 2px solid #86efac;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+}
+
+.bestHospital {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.bestBadge {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.2rem 0.6rem;
+  background: #22c55e;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+}
+
+.bestName {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.bestStats {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.bestStat {
+  font-size: var(--font-size-base);
+  color: var(--color-text-soft);
+}
+
+.bestStat strong {
+  color: var(--color-text);
+  font-size: 1.1rem;
+}
+
+.bestAddress {
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+  margin-top: var(--spacing-xs);
+}
+
+.liveBadge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  background: #ef4444;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 999px;
+  vertical-align: middle;
+  letter-spacing: 0.03em;
+}
+
+/* Hospital list improvements */
+.hospitalBest {
+  border-left: 3px solid #22c55e;
+  background: #f0fdf4;
+}
+
+.recommendedTag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  background: #22c55e;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.hospitalStats {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.hospitalStat {
+  font-size: var(--font-size-base);
+  color: var(--color-text-soft);
+  white-space: nowrap;
+}
+
+.hospitalStat::after {
+  content: '\00B7';
+  margin-left: var(--spacing-sm);
+  color: var(--color-border);
+}
+
+.hospitalStat:last-child::after {
+  content: '';
+}
+
+.directionsLink {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.directionsLink:hover {
+  text-decoration: underline;
+}
+
+/* Map legend color dots */
+.mapLegendInfo {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.legendDotBlue,
+.legendDotGreen,
+.legendDotRed {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legendDotBlue {
+  background: #2563eb;
+}
+
+.legendDotGreen {
+  background: #22c55e;
+}
+
+.legendDotRed {
+  background: #ef4444;
+}
+
+/* Map legend with directions links */
+.mapLegend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.mapLink {
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.mapLink:hover {
+  text-decoration: underline;
+}
+
+/* Disclaimer */
+.disclaimer {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+  text-align: center;
+  line-height: 1.5;
+  border-top: 1px solid var(--color-border);
+}
+
 .empty {
   font-size: var(--font-size-base);
   color: var(--color-text-soft);
@@ -184,13 +439,7 @@
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--color-border);
-  aspect-ratio: 16/10;
-}
-
-.map {
-  width: 100%;
-  height: 100%;
-  border: none;
+  height: 350px;
 }
 
 .actions {

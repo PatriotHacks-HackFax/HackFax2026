@@ -5,11 +5,9 @@
 
 // In dev: use Vite proxy (/api) to avoid CORS. In prod: use env or default.
 const BASE_URL =
-  import.meta.env.DEV
-    ? '/api'
-    : (import.meta.env.VITE_API_URL ||
-       import.meta.env.REACT_APP_API_URL ||
-       'http://localhost:3000');
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.REACT_APP_API_URL ||
+  (import.meta.env.DEV ? '/api' : 'http://localhost:3000');
 
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`;
@@ -20,7 +18,18 @@ async function request(endpoint, options = {}) {
     },
     ...options,
   };
-  const res = await fetch(url, config);
+  let res;
+  try {
+    res = await fetch(url, config);
+  } catch (err) {
+    // Dev fallback: if direct URL fails, retry through Vite proxy.
+    if (import.meta.env.DEV && BASE_URL !== '/api') {
+      const proxyUrl = `/api${endpoint}`;
+      res = await fetch(proxyUrl, config);
+    } else {
+      throw err;
+    }
+  }
   if (!res.ok) {
     const err = new Error(`API error: ${res.status} ${res.statusText}`);
     err.status = res.status;
@@ -38,13 +47,31 @@ async function request(endpoint, options = {}) {
 
 /**
  * POST /diagnose
- * @param {{ symptoms: string }} body
- * @returns {Promise<{ condition: string, severity: number, reasoning: string }>}
+ * @param {{ symptoms: string, languageCode?: string }} body
+ * @returns {Promise<{ condition: string, severity: number, reasoning: string, languageCode?: string }>}
  */
 export async function diagnose(body) {
   return request('/diagnose', {
     method: 'POST',
-    body: JSON.stringify({ symptoms: body.symptoms }),
+    body: JSON.stringify({
+      symptoms: body.symptoms,
+      languageCode: body.languageCode,
+    }),
+  });
+}
+
+/**
+ * POST /transcribe-audio
+ * @param {{ audioData: string, audioMimeType: string }} body
+ * @returns {Promise<{ symptomsText: string, languageCode: string }>}
+ */
+export async function transcribeAudio(body) {
+  return request('/transcribe-audio', {
+    method: 'POST',
+    body: JSON.stringify({
+      audioData: body.audioData,
+      audioMimeType: body.audioMimeType,
+    }),
   });
 }
 
@@ -100,7 +127,7 @@ export async function rank(body) {
  */
 export async function synthesizeTts(body) {
   const url = `${BASE_URL.replace(/\/$/, '')}/tts`;
-  const res = await fetch(url, {
+  const config = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -108,7 +135,17 @@ export async function synthesizeTts(body) {
       languageCode: body.languageCode,
       voiceId: body.voiceId,
     }),
-  });
+  };
+  let res;
+  try {
+    res = await fetch(url, config);
+  } catch (err) {
+    if (import.meta.env.DEV && BASE_URL !== '/api') {
+      res = await fetch('/api/tts', config);
+    } else {
+      throw err;
+    }
+  }
   if (!res.ok) {
     const err = new Error(res.status === 503 ? 'TTS service not configured' : 'Failed to generate speech');
     err.status = res.status;

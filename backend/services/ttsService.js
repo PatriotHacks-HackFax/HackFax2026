@@ -10,7 +10,7 @@ const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
 const SUPPORTED_LANGUAGES = [
   'en', 'es', 'fr', 'de', 'it', 'pt', 'pl', 'hi', 'ar', 'zh',
   'ja', 'ko', 'nl', 'ru', 'sv', 'tr', 'uk', 'vi', 'id', 'fil',
-  'ta', 'cs', 'da', 'fi', 'el', 'hu', 'no', 'ro', 'sk',
+  'ta', 'te', 'cs', 'da', 'fi', 'el', 'hu', 'no', 'ro', 'sk',
 ];
 
 /**

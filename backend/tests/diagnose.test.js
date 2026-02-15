@@ -30,6 +30,7 @@ describe('POST /diagnose', () => {
     expect(llmService.generateDiagnosis).toHaveBeenCalledWith({
       symptoms: ['headache and stress'],
       image: null,
+      languageCode: null,
     });
   });
 
@@ -71,10 +72,12 @@ describe('POST /diagnose', () => {
       condition: 'tension headache',
       severity: 1,
       reasoning: 'Common pattern for stress.',
+      languageCode: 'en',
     });
     expect(llmService.generateDiagnosis).toHaveBeenCalledWith({
       symptoms: ['headache'],
       image: null,
+      languageCode: null,
     });
   });
 
@@ -124,6 +127,7 @@ describe('POST /diagnose', () => {
         mimeType: 'image/png',
         data: 'iVBORw0KGgoAAAANSUhEUg==',
       },
+      languageCode: null,
     });
   });
 
@@ -148,6 +152,36 @@ describe('POST /diagnose', () => {
         mimeType: 'image/jpeg',
         data: '/9j/4AAQSkZJRgABAQAAAQABAAD',
       },
+      languageCode: null,
     });
+  });
+
+  it('passes requested language code to the LLM service', async () => {
+    llmService.generateDiagnosis.mockResolvedValue({
+      condition: 'gripe',
+      severity: 2,
+      reasoning: 'Coincide con sintomas comunes.',
+      languageCode: 'es',
+    });
+
+    const res = await request(app)
+      .post('/diagnose')
+      .send({ symptoms: ['fiebre'], languageCode: 'es' })
+      .expect(200);
+
+    expect(res.body.languageCode).toBe('es');
+    expect(llmService.generateDiagnosis).toHaveBeenCalledWith({
+      symptoms: ['fiebre'],
+      image: null,
+      languageCode: 'es',
+    });
+  });
+
+  it('rejects unsupported language codes', async () => {
+    await request(app)
+      .post('/diagnose')
+      .send({ symptoms: ['headache'], languageCode: 'xx' })
+      .expect(400);
+    expect(llmService.generateDiagnosis).not.toHaveBeenCalled();
   });
 });

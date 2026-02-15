@@ -1,4 +1,5 @@
 const llmService = require('../services/llmService');
+const { SUPPORTED_LANGUAGES } = require('../services/ttsService');
 
 const UNSAFE_PATTERNS = [
   /self[- ]?harm/i,
@@ -82,8 +83,25 @@ function validateOptionalImage(imageData, imageMimeType) {
   return { image: { data, mimeType } };
 }
 
+function validateLanguageCode(languageCode) {
+  if (languageCode === undefined || languageCode === null || languageCode === '') {
+    return { normalized: null };
+  }
+  if (typeof languageCode !== 'string') {
+    return { error: 'languageCode must be a string' };
+  }
+  const normalized = languageCode.trim().toLowerCase();
+  if (!normalized) {
+    return { normalized: null };
+  }
+  if (!SUPPORTED_LANGUAGES.includes(normalized)) {
+    return { error: `Unsupported language code "${normalized}"` };
+  }
+  return { normalized };
+}
+
 async function diagnose(req, res) {
-  const { symptoms, imageData, imageMimeType } = req.body || {};
+  const { symptoms, imageData, imageMimeType, languageCode } = req.body || {};
   const imageValidation = validateOptionalImage(imageData, imageMimeType);
   if (imageValidation.error) {
     return res.status(400).json({ error: imageValidation.error });
@@ -92,9 +110,14 @@ async function diagnose(req, res) {
   if (validation.error) {
     return res.status(400).json({ error: validation.error });
   }
+  const languageValidation = validateLanguageCode(languageCode);
+  if (languageValidation.error) {
+    return res.status(400).json({ error: languageValidation.error });
+  }
 
   const normalizedSymptoms = validation.normalized;
   const image = imageValidation.image;
+  const normalizedLanguageCode = languageValidation.normalized;
 
   if (normalizedSymptoms.length > 0 && isUnsafeInput(normalizedSymptoms)) {
     return res.status(400).json({ error: 'unsafe_input' });
@@ -104,11 +127,13 @@ async function diagnose(req, res) {
     const result = await llmService.generateDiagnosis({
       symptoms: normalizedSymptoms,
       image,
+      languageCode: normalizedLanguageCode,
     });
     return res.json({
       condition: result.condition,
       severity: result.severity,
       reasoning: result.reasoning,
+      languageCode: result.languageCode || normalizedLanguageCode || 'en',
     });
   } catch (err) {
     const status = Number.isInteger(err?.statusCode) ? err.statusCode : 503;
