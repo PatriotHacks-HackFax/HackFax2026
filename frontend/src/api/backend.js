@@ -9,7 +9,7 @@ const BASE_URL =
     ? '/api'
     : (import.meta.env.VITE_API_URL ||
        import.meta.env.REACT_APP_API_URL ||
-       'http://localhost:3000');
+       '/api');
 
 const TOKEN_KEY = 'triage_auth_token';
 
